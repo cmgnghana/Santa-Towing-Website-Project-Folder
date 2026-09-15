@@ -24,6 +24,17 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export default function Sitemap() {
+  const numberedData = React.useMemo(() => {
+    let counter = 1;
+    return SITEMAP_DATA.map(category => ({
+      ...category,
+      links: category.links.map(link => ({
+        ...link,
+        number: counter++
+      }))
+    }));
+  }, []);
+
   return (
     <main className="min-h-screen bg-slate-50 pt-24 pb-20">
       <SEO 
@@ -61,7 +72,7 @@ export default function Sitemap() {
 
         {/* Categories Listing */}
         <div className="space-y-8">
-          {SITEMAP_DATA.map((category, index) => {
+          {numberedData.map((category, index) => {
             const IconComponent = ICON_MAP[category.iconName] || Map;
 
             // Check if the first link acts as a structural parent for the group
@@ -95,7 +106,7 @@ export default function Sitemap() {
                         to={parentLink.path}
                         className="group inline-flex items-center gap-2 font-bold text-lg text-slate-900 hover:text-accent transition-colors"
                       >
-                        {parentLink.label}
+                        <span className="text-slate-500 mr-1">{parentLink.number}.</span> {parentLink.label}
                         <ChevronRight className="w-5 h-5 text-accent opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
                       </Link>
                       
@@ -111,7 +122,10 @@ export default function Sitemap() {
                               >
                                 <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-accent mt-0.5 shrink-0" />
                                 <div>
-                                  <span className="block leading-snug">{link.label}</span>
+                                  <span className="block leading-snug">
+                                    <span className="text-slate-400 font-bold mr-1">{link.number}.</span>
+                                    {link.label}
+                                  </span>
                                   <span className="text-xs text-slate-400 block mt-0.5 font-mono group-hover:text-accent/70 transition-colors break-all">
                                     {link.path}
                                   </span>
@@ -135,7 +149,7 @@ export default function Sitemap() {
                             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-accent mt-0.5 shrink-0 transition-colors" />
                             <div>
                               <span className="font-bold text-slate-800 group-hover:text-accent block transition-colors leading-snug">
-                                {link.label}
+                                <span className="text-slate-400 mr-1">{link.number}.</span> {link.label}
                               </span>
                               <span className="text-xs text-slate-400 block mt-1 font-mono group-hover:text-slate-500 transition-colors break-all">
                                 {link.path}
