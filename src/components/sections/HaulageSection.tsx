@@ -82,7 +82,7 @@ export function HaulageHomeSection() {
         </div>
 
         {/* 4-Card Showcase Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {HOMEPAGE_HAULAGE_HIGHLIGHTS.map((item, idx) => {
             return (
               <motion.div
@@ -122,27 +122,6 @@ export function HaulageHomeSection() {
             );
           })}
         </div>
-
-        {/* Feature badges row */}
-        <div className="p-6 rounded-[1px] bg-white/5 border border-white/10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs sm:text-sm">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-accent shrink-0" />
-            <span className="text-slate-200 font-medium">Tema Harbour Direct Clearance</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-accent shrink-0" />
-            <span className="text-slate-200 font-medium">Multi-Axle Lowbed Fleet</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-accent shrink-0" />
-            <span className="text-slate-200 font-medium">Comprehensive Cargo Insurance</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-accent shrink-0" />
-            <span className="text-slate-200 font-medium">Nationwide 16-Region Transit</span>
-          </div>
-        </div>
-
       </div>
     </section>
   );

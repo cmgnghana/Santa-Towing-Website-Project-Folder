@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { VEHICLES, RENTAL_CATEGORIES } from '@/data/mockData';
-import { Settings, Fuel, Calendar, MapPin, Users, ArrowRight, Tag, ShieldCheck, Phone, X } from 'lucide-react';
+import { Settings, Fuel, Calendar, MapPin, Users, ArrowRight, Tag, ShieldCheck, Phone, X, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function FeaturedVehicles() {
@@ -112,19 +112,18 @@ export function FeaturedVehicles() {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-2 gap-2 mt-auto">
-                    <button 
-                      onClick={() => setSelectedVehicle(vehicle)}
-                      className="bg-slate-100 hover:bg-slate-200 text-dark py-2.5 font-bold transition-colors text-xs sm:text-sm text-center flex items-center justify-center border border-gray-200 rounded-full"
-                    >
-                      Quick View
-                    </button>
-                    <a 
-                      href="tel:0244753849" 
-                      className="bg-accent hover:bg-accent/90 text-white py-2.5 font-bold transition-all text-xs sm:text-sm text-center flex items-center justify-center shadow-md shadow-accent/20 rounded-full gap-1"
-                    >
-                      <Phone className="w-4 h-4" /> Call
-                    </a>
+                  <div className="flex flex-col gap-2 mt-auto">
+                    <Link to={`/sales/${vehicle.id}`} className="w-full text-center bg-white hover:bg-dark/5 text-dark border border-dark/20 py-3 font-bold transition-colors text-sm rounded-full">
+                      View Details
+                    </Link>
+                    <div className="flex gap-2">
+                      <a href="tel:0244753849" className="flex-1 text-center bg-primary hover:bg-black text-white py-3 font-bold transition-colors text-sm shadow-md rounded-full flex items-center justify-center gap-1">
+                        <Phone className="w-4 h-4"/> Call
+                      </a>
+                      <a href="https://wa.me/233244753849" target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3 font-bold transition-colors text-sm shadow-md rounded-full flex items-center justify-center gap-1">
+                        <MessageCircle className="w-4 h-4"/> WhatsApp
+                      </a>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -294,19 +293,18 @@ export function RentalFleet() {
                 </div>
                 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-2 mt-auto">
-                  <button 
-                    onClick={() => setSelectedRental(category)}
-                    className="bg-slate-100 hover:bg-slate-200 text-dark py-2.5 font-bold transition-colors text-xs sm:text-sm text-center flex items-center justify-center border border-gray-200 rounded-full"
-                  >
-                    Quick View
-                  </button>
-                  <a 
-                    href="tel:0244753849" 
-                    className="bg-accent hover:bg-accent/90 text-white py-2.5 font-bold transition-all text-xs sm:text-sm text-center flex items-center justify-center shadow-md shadow-accent/20 rounded-full gap-1"
-                  >
-                    <Phone className="w-4 h-4" /> Call
-                  </a>
+                <div className="flex flex-col gap-2 mt-auto">
+                  <Link to={`/rental/${category.id}`} className="w-full text-center bg-white hover:bg-dark/5 text-dark border border-dark/20 py-3 font-bold transition-colors text-sm rounded-full">
+                    View Details
+                  </Link>
+                  <div className="flex gap-2">
+                    <a href="tel:0244753849" className="flex-1 text-center bg-primary hover:bg-black text-white py-3 font-bold transition-colors text-sm shadow-md rounded-full flex items-center justify-center gap-1">
+                      <Phone className="w-4 h-4"/> Call
+                    </a>
+                    <a href="https://wa.me/233244753849" target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3 font-bold transition-colors text-sm shadow-md rounded-full flex items-center justify-center gap-1">
+                      <MessageCircle className="w-4 h-4"/> WhatsApp
+                    </a>
+                  </div>
                 </div>
               </div>
             </motion.div>

@@ -1,19 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Phone, MapPin, Navigation, Clock, ShieldCheck, Tag, FileText, ArrowRight, Truck, Wrench, Car, ChevronDown, Star } from 'lucide-react';
+import { Phone, MapPin, Navigation, Clock, ShieldCheck, Tag, FileText, ArrowRight, Truck, Wrench, Car, ChevronDown, Star, Search, X, Check, MessageCircle, Mail } from 'lucide-react';
 import ScrollToFooterArrow from '@/components/ui/ScrollToFooterArrow';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import SEO from '@/components/seo/SEO';
+import { GHANA_REGIONS_DATA, ALL_GHANA_REGIONS } from '@/data/ghanaLocations';
 
 const TOWING_FEATURES = [
   { title: 'Average 30-Min Response', icon: Clock },
-  { title: 'GPS-Tracked Fleet', icon: Navigation },
-  { title: 'Certified Operators', icon: ShieldCheck },
   { title: 'Nationwide Coverage', icon: MapPin },
   { title: 'Transparent Pricing', icon: Tag },
-  { title: 'Insurance Friendly', icon: FileText },
 ];
 
 const TOWING_PROCESS = [
@@ -41,13 +39,195 @@ export default function Towing() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
 
+  // Form field state
+  const [name, setName] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [vehicleMakeModel, setVehicleMakeModel] = useState<string>('');
+  const [issue, setIssue] = useState<string>('');
+
+  // Dependent location state
+  const [selectedRegion, setSelectedRegion] = useState<string>('');
+  const [regionSearch, setRegionSearch] = useState<string>('');
+  const [isRegionOpen, setIsRegionOpen] = useState<boolean>(false);
+
+  const [selectedArea, setSelectedArea] = useState<string>('');
+  const [areaSearch, setAreaSearch] = useState<string>('');
+  const [isAreaOpen, setIsAreaOpen] = useState<boolean>(false);
+
+  const regionRef = useRef<HTMLDivElement>(null);
+  const areaRef = useRef<HTMLDivElement>(null);
+
+  const ISSUE_LABELS: Record<string, string> = {
+    breakdown: 'Vehicle Breakdown',
+    accident: 'Accident Recovery',
+    'flat-tire': 'Flat Tire',
+    fuel: 'Out of Fuel',
+    lockout: 'Vehicle Lockout',
+    other: 'Other Roadside Issue'
+  };
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (regionRef.current && !regionRef.current.contains(event.target as Node)) {
+        setIsRegionOpen(false);
+      }
+      if (areaRef.current && !areaRef.current.contains(event.target as Node)) {
+        setIsAreaOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filtered regions
+  const filteredRegions = useMemo(() => {
+    const q = regionSearch.trim().toLowerCase();
+    if (!q) return ALL_GHANA_REGIONS;
+    return ALL_GHANA_REGIONS.filter(r => r.toLowerCase().includes(q));
+  }, [regionSearch]);
+
+  // Available areas for selected region
+  const availableAreas = useMemo(() => {
+    if (!selectedRegion) return [];
+    const regionObj = GHANA_REGIONS_DATA.find(r => r.region.toLowerCase() === selectedRegion.toLowerCase());
+    return regionObj ? regionObj.areas : [];
+  }, [selectedRegion]);
+
+  // Filtered areas
+  const filteredAreas = useMemo(() => {
+    const q = areaSearch.trim().toLowerCase();
+    if (!q) return availableAreas;
+    return availableAreas.filter(a => a.toLowerCase().includes(q));
+  }, [availableAreas, areaSearch]);
+
+  const handleSelectRegion = (region: string) => {
+    setSelectedRegion(region);
+    setRegionSearch(region);
+    setIsRegionOpen(false);
+    // Reset area
+    setSelectedArea('');
+    setAreaSearch('');
+    // Automatically open area dropdown for fast flow
+    setTimeout(() => {
+      setIsAreaOpen(true);
+    }, 100);
+  };
+
+  const handleClearRegion = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedRegion('');
+    setRegionSearch('');
+    setSelectedArea('');
+    setAreaSearch('');
+    setIsRegionOpen(false);
+    setIsAreaOpen(false);
+  };
+
+  const handleSelectArea = (area: string) => {
+    setSelectedArea(area);
+    setAreaSearch(area);
+    setIsAreaOpen(false);
+  };
+
+  const handleClearArea = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedArea('');
+    setAreaSearch('');
+    setIsAreaOpen(false);
+  };
+
+  const generateWhatsAppMessage = () => {
+    const issueText = ISSUE_LABELS[issue] || issue || 'Emergency Towing Required';
+    return `🚨 *EMERGENCY TOWING REQUEST - SANTA TOWING*
+
+👤 *Name:* ${name || 'Not provided'}
+📞 *Phone Number:* ${phone || 'Not provided'}
+📍 *Region:* ${selectedRegion || 'Not specified'}
+📌 *Area / Town:* ${selectedArea || 'Not specified'}
+🚗 *Vehicle Make & Model:* ${vehicleMakeModel || 'Not provided'}
+⚠️ *Issue / Situation:* ${issueText}
+
+_Please dispatch an emergency tow truck to my location as soon as possible._`;
+  };
+
+  const generateEmailSubject = () => {
+    return `🚨 Emergency Towing Request: ${name ? name + ' - ' : ''}${selectedArea ? selectedArea + ', ' : ''}${selectedRegion || 'Ghana'}`;
+  };
+
+  const generateEmailBody = () => {
+    const issueText = ISSUE_LABELS[issue] || issue || 'Emergency Towing Required';
+    return `EMERGENCY TOWING & RECOVERY REQUEST
+SANTA TOWING & RECOVERY DISPATCH CENTER
+
+CUSTOMER DETAILS:
+------------------------------------------
+• Name: ${name || 'Not provided'}
+• Phone Number: ${phone || 'Not provided'}
+
+LOCATION INFORMATION:
+------------------------------------------
+• Region: ${selectedRegion || 'Not specified'}
+• Area / Town: ${selectedArea || 'Not specified'}
+
+VEHICLE & INCIDENT DETAILS:
+------------------------------------------
+• Vehicle Make & Model: ${vehicleMakeModel || 'Not provided'}
+• Issue / Service Needed: ${issueText}
+
+------------------------------------------
+Please dispatch an available recovery vehicle to this location immediately.
+
+Sent via Santa Towing Online Dispatch Form.`;
+  };
+
+  const handleWhatsAppSubmit = (e: React.MouseEvent) => {
+    const form = (e.currentTarget as HTMLElement).closest('form');
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    if (!selectedRegion) {
+      setIsRegionOpen(true);
+      return;
+    }
+    if (!selectedArea) {
+      setIsAreaOpen(true);
+      return;
+    }
+    const text = generateWhatsAppMessage();
+    const url = `https://wa.me/233244753849?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleEmailSubmit = (e: React.MouseEvent) => {
+    const form = (e.currentTarget as HTMLElement).closest('form');
+    if (form && !form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    if (!selectedRegion) {
+      setIsRegionOpen(true);
+      return;
+    }
+    if (!selectedArea) {
+      setIsAreaOpen(true);
+      return;
+    }
+    const subject = generateEmailSubject();
+    const body = generateEmailBody();
+    const mailtoUrl = `mailto:santatowing.garage@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormState('submitting');
-    setTimeout(() => {
-      setFormState('success');
-      setTimeout(() => setFormState('idle'), 5000);
-    }, 1500);
+    if (!selectedRegion || !selectedArea) {
+      if (!selectedRegion) setIsRegionOpen(true);
+      else if (!selectedArea) setIsAreaOpen(true);
+      return;
+    }
+    handleWhatsAppSubmit(e as any);
   };
 
   return (
@@ -67,9 +247,6 @@ export default function Towing() {
           <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
             
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent font-bold text-sm mb-6 uppercase tracking-wider border border-accent/20 animate-pulse">
-                <Clock className="w-4 h-4" /> 24/7 Emergency Response
-              </div>
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -120,20 +297,214 @@ export default function Towing() {
                   
                   <form className="space-y-4" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input required type="text" placeholder="Your Name" className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full" />
-                      <input required type="tel" placeholder="Phone Number" className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full" />
+                      <input 
+                        required 
+                        type="text" 
+                        placeholder="Your Name" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full" 
+                      />
+                      <input 
+                        required 
+                        type="tel" 
+                        placeholder="Phone Number" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full" 
+                      />
                     </div>
                     
-                    <div className="relative">
-                      <input required type="text" placeholder="Current Location" className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full pr-12" />
-                      <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-primary p-1 hover:bg-accent/10 rounded-xl transition-colors rounded-full" title="Use My Location">
-                        <MapPin className="w-5 h-5" />
-                      </button>
+                    {/* Two-Step Dependent Location Dropdown (Region & Area) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* 1. Region Dropdown */}
+                      <div className="relative" ref={regionRef}>
+                        <div className="relative">
+                          <input
+                            required
+                            type="text"
+                            placeholder="Select Region in Ghana..."
+                            value={regionSearch}
+                            onFocus={() => setIsRegionOpen(true)}
+                            onChange={(e) => {
+                              setRegionSearch(e.target.value);
+                              setIsRegionOpen(true);
+                              if (selectedRegion && e.target.value !== selectedRegion) {
+                                setSelectedRegion('');
+                                setSelectedArea('');
+                                setAreaSearch('');
+                              }
+                            }}
+                            className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full pr-16 text-sm placeholder:text-dark/50"
+                          />
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-dark/40">
+                            {regionSearch && (
+                              <button
+                                type="button"
+                                onClick={handleClearRegion}
+                                className="p-1 hover:text-dark rounded-full transition-colors"
+                                title="Clear Region"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setIsRegionOpen(prev => !prev)}
+                              className="p-1 hover:text-dark transition-colors"
+                            >
+                              <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isRegionOpen && "rotate-180")} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Region Suggestions Dropdown Menu */}
+                        <AnimatePresence>
+                          {isRegionOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-dark/15 rounded-lg shadow-2xl max-h-56 overflow-y-auto z-50 divide-y divide-dark/5"
+                            >
+                              {filteredRegions.length > 0 ? (
+                                filteredRegions.map((region) => {
+                                  const isSelected = selectedRegion === region;
+                                  return (
+                                    <button
+                                      key={region}
+                                      type="button"
+                                      onClick={() => handleSelectRegion(region)}
+                                      className={cn(
+                                        "w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-accent/10 hover:text-accent transition-colors",
+                                        isSelected ? "bg-accent/15 text-accent font-semibold" : "text-dark"
+                                      )}
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        <MapPin className={cn("w-3.5 h-3.5", isSelected ? "text-accent" : "text-dark/40")} />
+                                        {region}
+                                      </span>
+                                      {isSelected && <Check className="w-4 h-4 text-accent" />}
+                                    </button>
+                                  );
+                                })
+                              ) : (
+                                <div className="p-3 text-xs text-dark/50 text-center">
+                                  No matching regions found
+                                </div>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* 2. Dependent Area Dropdown */}
+                      <div className="relative" ref={areaRef}>
+                        <div className="relative">
+                          <input
+                            required
+                            disabled={!selectedRegion}
+                            type="text"
+                            placeholder={selectedRegion ? `Select Area / Town...` : "Select Region first..."}
+                            value={areaSearch}
+                            onFocus={() => {
+                              if (selectedRegion) setIsAreaOpen(true);
+                            }}
+                            onChange={(e) => {
+                              if (!selectedRegion) return;
+                              setAreaSearch(e.target.value);
+                              setIsAreaOpen(true);
+                              if (selectedArea && e.target.value !== selectedArea) {
+                                setSelectedArea('');
+                              }
+                            }}
+                            className={cn(
+                              "bg-white border rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full pr-16 text-sm placeholder:text-dark/50 transition-colors",
+                              !selectedRegion ? "bg-slate-100/70 border-dark/10 cursor-not-allowed opacity-60" : "border-dark/20"
+                            )}
+                          />
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-dark/40">
+                            {areaSearch && selectedRegion && (
+                              <button
+                                type="button"
+                                onClick={handleClearArea}
+                                className="p-1 hover:text-dark rounded-full transition-colors"
+                                title="Clear Area"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              disabled={!selectedRegion}
+                              onClick={() => {
+                                if (selectedRegion) setIsAreaOpen(prev => !prev);
+                              }}
+                              className={cn("p-1 transition-colors", selectedRegion ? "hover:text-dark" : "opacity-40 cursor-not-allowed")}
+                            >
+                              <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isAreaOpen && "rotate-180")} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Area Suggestions Dropdown Menu */}
+                        <AnimatePresence>
+                          {isAreaOpen && selectedRegion && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -4 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-dark/15 rounded-lg shadow-2xl max-h-56 overflow-y-auto z-50 divide-y divide-dark/5"
+                            >
+                              {filteredAreas.length > 0 ? (
+                                filteredAreas.map((area) => {
+                                  const isSelected = selectedArea === area;
+                                  return (
+                                    <button
+                                      key={area}
+                                      type="button"
+                                      onClick={() => handleSelectArea(area)}
+                                      className={cn(
+                                        "w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-accent/10 hover:text-accent transition-colors",
+                                        isSelected ? "bg-accent/15 text-accent font-semibold" : "text-dark"
+                                      )}
+                                    >
+                                      <span className="flex items-center gap-2">
+                                        <Navigation className={cn("w-3.5 h-3.5", isSelected ? "text-accent" : "text-dark/40")} />
+                                        {area}
+                                      </span>
+                                      {isSelected && <Check className="w-4 h-4 text-accent" />}
+                                    </button>
+                                  );
+                                })
+                              ) : (
+                                <div className="p-3 text-xs text-dark/50 text-center">
+                                  No matching areas found in {selectedRegion}
+                                </div>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input required type="text" placeholder="Vehicle Make & Model" className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full" />
-                      <select required defaultValue="" className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark/70 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full appearance-none">
+                      <input 
+                        required 
+                        type="text" 
+                        placeholder="Vehicle Make & Model" 
+                        value={vehicleMakeModel}
+                        onChange={(e) => setVehicleMakeModel(e.target.value)}
+                        className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full" 
+                      />
+                      <select 
+                        required 
+                        value={issue} 
+                        onChange={(e) => setIssue(e.target.value)}
+                        className="bg-white border border-dark/20 rounded-lg px-4 py-3 text-dark/70 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent w-full appearance-none"
+                      >
                         <option value="" disabled>Select Issue...</option>
                         <option value="breakdown">Breakdown</option>
                         <option value="accident">Accident</option>
@@ -144,13 +515,26 @@ export default function Towing() {
                       </select>
                     </div>
                     
-                    <button disabled={formState === 'submitting'} className="w-full bg-primary hover:bg-black text-white font-bold py-4 transition-all shadow-lg flex items-center justify-center gap-2 mt-2 disabled:opacity-70 rounded-full">
-                      {formState === 'submitting' ? (
-                        <span className="animate-pulse">Processing...</span>
-                      ) : (
-                        <><Truck className="w-5 h-5" /> Request Emergency Towing</>
-                      )}
-                    </button>
+                    {/* Action Buttons Stack */}
+                    <div className="flex flex-col gap-3 pt-2">
+                      {/* 1. WhatsApp Button (Top) */}
+                      <button 
+                        type="button"
+                        onClick={handleWhatsAppSubmit}
+                        className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-3.5 sm:py-4 transition-all shadow-lg shadow-[#25D366]/20 flex items-center justify-center rounded-full text-base group"
+                      >
+                        <span>Request an Emergency Towing (WhatsApp)</span>
+                      </button>
+
+                      {/* 2. Email Button (Directly beneath) */}
+                      <button 
+                        type="button"
+                        onClick={handleEmailSubmit}
+                        className="w-full bg-primary hover:bg-black text-white font-bold py-3.5 sm:py-4 transition-all shadow-lg shadow-primary/20 flex items-center justify-center rounded-full text-base border border-white/10 group"
+                      >
+                        <span>Request an Emergency Towing (Email)</span>
+                      </button>
+                    </div>
                   </form>
                 </>
               )}
@@ -243,7 +627,7 @@ export default function Towing() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-[1px] overflow-hidden hover:border-accent/50 transition-colors group flex flex-col"
+                className="bg-white/5 overflow-hidden transition-colors group flex flex-col"
               >
                 <div className="aspect-video relative overflow-hidden">
                   <img src={type.image} alt={type.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -265,9 +649,6 @@ export default function Towing() {
           <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
             
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-accent/10 text-accent font-bold text-sm mb-6 uppercase tracking-wider">
-                <MapPin className="w-4 h-4" /> Nationwide Coverage
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold text-dark mb-6">Wherever You Are, We'll Find You.</h2>
               <p className="text-dark/70 mb-8 text-lg">
                 Operating across major cities and highways, our decentralized fleet ensures that a recovery vehicle is always stationed near you. We serve Accra, Kumasi, Takoradi, Tema, and all major connecting routes.
@@ -276,35 +657,17 @@ export default function Towing() {
               <hr className="border-dark/20 my-8" />
               
               <h3 className="text-2xl font-bold text-dark mb-4">Transparent, Upfront Pricing</h3>
-              <p className="text-dark/70 mb-8">
+              <p className="text-dark/70 text-lg">
                 No hidden fees, no surprises. Our pricing is quote-based on distance and vehicle type. We provide a clear estimate before dispatching a driver so you know exactly what to expect.
               </p>
-              
-              <button className="bg-primary hover:bg-black text-white px-4 sm:px-8 py-4 font-bold transition-all shadow-lg inline-flex items-center gap-2 rounded-full">
-                Get an Instant Quote <ArrowRight className="w-5 h-5" />
-              </button>
             </div>
             
             <div className="bg-white rounded-[1px] overflow-hidden aspect-square relative shadow-xl border-8 border-white">
-              {/* Map Placeholder */}
-              <div className="absolute inset-0 bg-[url('https://i.ibb.co/Mx8G6vHw/Image-5-Economy-Nissan-Almera-2021.jpg')] bg-cover bg-center grayscale opacity-50" />
-              <div className="absolute inset-0 bg-primary/10 mix-blend-multiply" />
-              
-              {/* Map Markers */}
-              <div className="absolute top-1/3 left-1/3 animate-bounce">
-                <div className="w-4 h-4 bg-primary rounded-full shadow-[0_0_0_4px_rgba(239,111,35,0.3)]" />
-              </div>
-              <div className="absolute top-1/2 left-2/3 animate-bounce" style={{ animationDelay: '0.2s' }}>
-                <div className="w-4 h-4 bg-primary rounded-full shadow-[0_0_0_4px_rgba(239,111,35,0.3)]" />
-              </div>
-              <div className="absolute bottom-1/3 left-1/2 animate-bounce" style={{ animationDelay: '0.4s' }}>
-                <div className="w-4 h-4 bg-primary rounded-full shadow-[0_0_0_4px_rgba(28,32,43,0.3)]" />
-              </div>
-              
-              <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-md rounded-[1px] p-6 shadow-xl">
-                <h4 className="font-bold text-dark mb-2">Live Fleet Tracking Active</h4>
-                <p className="text-sm text-dark/70">24 recovery vehicles currently on patrol.</p>
-              </div>
+              <img 
+                src="https://i.ibb.co/Mx8G6vHw/Image-5-Economy-Nissan-Almera-2021.jpg" 
+                alt="Nationwide Towing & Recovery Fleet" 
+                className="w-full h-full object-cover" 
+              />
             </div>
 
           </div>
@@ -397,9 +760,14 @@ export default function Towing() {
             <a href="tel:0244753849" className="w-full sm:w-auto bg-primary hover:bg-black text-white px-4 sm:px-8 py-5 font-bold transition-all shadow-xl flex items-center justify-center gap-3 text-lg rounded-full">
               <Phone className="w-6 h-6" /> Call 0244753849
             </a>
-            <button className="w-full sm:w-auto bg-white hover:bg-dark/5 text-dark px-4 sm:px-8 py-5 font-bold transition-all shadow-xl flex items-center justify-center gap-3 text-lg rounded-full">
-              <Truck className="w-6 h-6" /> Request Online
-            </button>
+            <a 
+              href="https://wa.me/233244753849?text=Hello%20Santa%20Towing%2C%20I%20need%20emergency%20towing%20assistance."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto bg-[#25D366] hover:bg-[#20ba59] text-white px-4 sm:px-8 py-5 font-bold transition-all shadow-xl flex items-center justify-center gap-3 text-lg rounded-full"
+            >
+              <MessageCircle className="w-6 h-6" /> WhatsApp Us
+            </a>
           </div>
         </div>
       </section>

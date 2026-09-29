@@ -1,446 +1,444 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useParams } from 'react-router-dom';
 import { 
   ChevronRight, Calendar, MapPin, Fuel, Settings, ShieldCheck, FileText, CheckCircle2, 
-  Heart, Share2, Phone, MessageCircle, ArrowRight, ChevronDown, Star, Car, Calculator 
+  Heart, Share2, Phone, MessageCircle, ArrowRight, ChevronDown, Star, Car, Calculator,
+  Clock, Award, Shield, Check, Info, AlertCircle, Eye, Sparkles, Send, X, CheckCircle, Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FAQ } from '@/components/sections/BottomSections';
 import SEO from '@/components/seo/SEO';
-import { VEHICLES } from '@/data/mockData';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
-const VEHICLE_SPECS = {
-  engine: [
-    { label: 'Engine Type', value: '2.0L Inline-4 Turbo' },
-    { label: 'Horsepower', value: '255 hp @ 5,800 rpm' },
-    { label: 'Torque', value: '295 lb-ft @ 1,200 rpm' },
-    { label: 'Displacement', value: '1,991 cc' }
-  ],
-  performance: [
-    { label: '0-60 mph', value: '6.1 seconds' },
-    { label: 'Top Speed', value: '130 mph' },
-    { label: 'Drive Type', value: 'Rear-Wheel Drive' },
-    { label: 'Transmission', value: '9-speed Automatic' }
-  ],
-  dimensions: [
-    { label: 'Length', value: '194.3 in' },
-    { label: 'Width', value: '73.1 in' },
-    { label: 'Height', value: '57.8 in' },
-    { label: 'Curb Weight', value: '3,781 lbs' }
-  ],
+const RENTAL_SPECS_DATA = {
   features: [
-    'Apple CarPlay & Android Auto', 'Burmester Surround Sound', 'Heated Front Seats',
-    'Blind Spot Assist', 'Active Parking Assist', 'Power Sunroof', 'LED Headlamps',
-    'Keyless-GO', 'Dual-Zone Climate Control', 'Ambient Lighting'
+    'Comprehensive Comprehensive Fleet Insurance Coverage',
+    'Unlimited Mileage within Greater Accra Metropolitan Area',
+    'Optional Professional Uniformed Chauffeur / Driver',
+    'Full Air Conditioning & Climate Control',
+    'Bluetooth Audio & Hands-Free Connectivity',
+    '24/7 Nationwide Emergency Roadside Assistance & Breakdown Replacement',
+    'Clean, Sanitized & Full Tank on Pickup',
+    'Baby / Child Safety Seat Available on Request'
+  ],
+  rates: [
+    { period: 'Daily Rate (1 - 3 Days)', price: 'GH₵ 850 / day', note: 'Standard daily hire' },
+    { period: 'Weekly Rate (4 - 7 Days)', price: 'GH₵ 750 / day', note: 'Save 12%' },
+    { period: 'Monthly Corporate Hire (30+ Days)', price: 'GH₵ 600 / day', note: 'Save up to 30%' },
+    { period: 'Chauffeur / Driver Allowance', price: 'GH₵ 150 / day', note: 'Professional vetted driver' }
   ]
 };
 
-const VEHICLE_HISTORY = [
-  { label: 'Inspection Status', value: 'Passed 150-Point Inspection', status: 'success' },
-  { label: 'Accident History', value: 'No Reported Accidents', status: 'success' },
-  { label: 'Service Records', value: 'Comprehensive Dealer History', status: 'success' },
-  { label: 'Previous Owners', value: '1 Owner', status: 'neutral' },
-  { label: 'Title Check', value: 'Clean Title', status: 'success' },
-];
-
-const VEHICLE_FAQS = [
-  { q: 'Can I arrange a test drive?', a: 'Yes, test drives can be scheduled at your convenience. Please use the "Call for details" button to select a date and time.' },
-  { q: 'Is financing available for this vehicle?', a: 'Yes, we offer competitive financing options through our partner banks. You can use our financing calculator below for an estimate or apply directly.' },
-  { q: 'What is the warranty coverage?', a: 'This vehicle comes with a standard 3-month or 5,000 km dealer warranty. Extended warranty options are also available at purchase.' },
-  { q: 'Can you deliver the vehicle to my location?', a: 'Yes, we offer nationwide delivery. Delivery within the city is often free, while out-of-town deliveries incur a standard transport fee based on distance.' },
+const RENTAL_FAQS = [
+  { 
+    q: 'What documents are required to rent a vehicle?', 
+    a: 'For self-drive rentals, you will need a valid National ID or Passport, a valid Driver’s License (held for at least 2 years), and a refundable security deposit. For chauffeur-driven rentals, only ID is required.' 
+  },
+  { 
+    q: 'Can I take the vehicle outside Greater Accra?', 
+    a: 'Yes! Our rental fleet is permitted for travel across all 16 regions of Ghana. Please inform our booking agent in advance if you plan cross-country journeys so we can provide appropriate highway readiness.' 
+  },
+  { 
+    q: 'What is your fuel policy?', 
+    a: 'Vehicles are provided with a full tank of fuel upon handover and should be returned with the same level of fuel. Alternatively, we can refuel for you at standard pump prices.' 
+  },
+  { 
+    q: 'Is insurance included in the rental price?', 
+    a: 'Yes, all rental vehicles come with Comprehensive Motor Insurance. An optional Zero-Excess Collision Damage Waiver (CDW) can be added for extra peace of mind.' 
+  }
 ];
 
 export default function RentalDetails() {
   const { id } = useParams();
-  const [activeTab, setActiveTab] = useState('Specs');
-  const [activeSpecTab, setActiveSpecTab] = useState('Engine');
-  const [activeImage, setActiveImage] = useState('https://i.ibb.co/zVkLKHdN/Image-2-A-SUV-KIA-Sportage-2024-Ratio.png');
-  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-  
-  
+  const rentalId = Number(id) || 1;
 
-  const images = [
-    'https://i.ibb.co/KcZkH37Y/Image-3-Sedan-Toyotta-Corolla.jpg',
-    'https://i.ibb.co/WpNkptMZ/Image-4-Van-Hyundai-H1-2022.jpg',
-    'https://i.ibb.co/Mx8G6vHw/Image-5-Economy-Nissan-Almera-2021.jpg',
-    'https://i.ibb.co/DH19ffJd/Image-6-Luxury-Mercedes-Benz.jpg'
+  const rentalVehicles = [
+    { id: 1, name: 'Toyota Land Cruiser V8 / Prado', type: 'Luxury SUV', price: 'GH₵ 1,500 / day', seats: '7 Seats', fuel: 'Diesel', transmission: 'Automatic', image: 'https://i.ibb.co/zVkLKHdN/Image-2-A-SUV-KIA-Sportage-2024-Ratio.png' },
+    { id: 2, name: 'Hyundai H1 Executive Bus', type: 'Passenger Van', price: 'GH₵ 1,200 / day', seats: '12 Seats', fuel: 'Diesel', transmission: 'Automatic', image: 'https://i.ibb.co/WpNkptMZ/Image-4-Van-Hyundai-H1-2022.jpg' },
+    { id: 3, name: 'Toyota Corolla Sedan', type: 'Economy Sedan', price: 'GH₵ 650 / day', seats: '5 Seats', fuel: 'Petrol', transmission: 'Automatic', image: 'https://i.ibb.co/KcZkH37Y/Image-3-Sedan-Toyotta-Corolla.jpg' },
+    { id: 4, name: 'Toyota Hilux 4x4 Double Cabin', type: 'Pickup 4x4', price: 'GH₵ 950 / day', seats: '5 Seats', fuel: 'Diesel', transmission: 'Automatic', image: 'https://i.ibb.co/vC6nfrK8/Image-7-Pickup-Toyota-Hilux-2023.jpg' }
   ];
 
+  const vehicle = rentalVehicles.find(v => v.id === rentalId) || rentalVehicles[0];
+
+  const galleryImages = [
+    vehicle.image,
+    'https://i.ibb.co/DH19ffJd/Image-6-Luxury-Mercedes-Benz.jpg',
+    'https://i.ibb.co/KcZkH37Y/Image-3-Sedan-Toyotta-Corolla.jpg',
+    'https://i.ibb.co/zVkLKHdN/Image-2-A-SUV-KIA-Sportage-2024-Ratio.png'
+  ];
+
+  const [activeImage, setActiveImage] = useState<string>(galleryImages[0]);
+  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingSubmitted, setBookingSubmitted] = useState(false);
+  const [withDriver, setWithDriver] = useState(false);
+
+  useEffect(() => {
+    setActiveImage(galleryImages[0]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [rentalId]);
+
   return (
-    <main className="pt-24 lg:pt-[104px] bg-white min-h-screen">
-      
-      {/* 1. Breadcrumb */}
-      <div className="bg-white border-b border-dark/20 py-4">
+    <main className="pt-24 lg:pt-[104px] bg-slate-50 min-h-screen">
+      <SEO 
+        title={`${vehicle.name} Rental in Ghana | Santa Towing Car Hire`} 
+        description={`Rent ${vehicle.name} in Accra & across Ghana. Affordable daily & weekly rates with chauffeur and self-drive options. 24/7 roadside assistance included.`} 
+        canonical={`/rental/${rentalId}`} 
+      />
+
+      {/* Top Breadcrumbs */}
+      <div className="bg-white border-b border-gray-200/80 py-3.5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-dark/70">
-            <Link to="/" className="hover:text-accent transition-colors">Home</Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link to="/rental" className="hover:text-accent transition-colors">Car Rental</Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-dark font-medium">New</span>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-dark font-medium">2024 Mercedes-Benz E-Class</span>
-          </div>
+          <Breadcrumbs 
+            items={[
+              { label: 'Car Rental', path: '/rental' },
+              { label: vehicle.type, path: '/rental' },
+              { label: vehicle.name }
+            ]} 
+          />
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      {/* 2-Column Responsive Layout */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
           {/* Main Content Column */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-8 space-y-8">
             
-            {/* 2. Vehicle Gallery */}
-            <div className="bg-white p-4 rounded-[1px] shadow-sm border border-dark/10">
-              <div className="aspect-[16/10] relative rounded-[1px] overflow-hidden mb-4 group">
-                <img src={activeImage} alt="Vehicle" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute top-4 left-4 bg-accent text-white px-4 py-1.5 rounded-[1px] text-sm font-bold shadow-md">
-                  New
+            {/* Gallery */}
+            <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200/80 shadow-sm space-y-4">
+              <div className="aspect-[16/10] relative rounded-lg overflow-hidden bg-slate-100 border border-gray-100">
+                <img 
+                  src={activeImage} 
+                  alt={vehicle.name} 
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
+                />
+                <div className="absolute top-4 left-4 bg-dark/85 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-md">
+                  Santa Towing Verified Fleet
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-2 sm:gap-4">
-                {images.map((img, idx) => (
+
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                {galleryImages.map((img, idx) => (
                   <button 
                     key={idx}
                     onClick={() => setActiveImage(img)}
                     className={cn(
-                      "aspect-video rounded-2xl overflow-hidden border-2 transition-all",
-                      activeImage === img ? "border-primary" : "border-transparent hover:border-dark/30"
+                      "aspect-video rounded-lg overflow-hidden border-2 transition-all bg-slate-100",
+                      activeImage === img ? "border-accent ring-2 ring-accent/30 shadow-md" : "border-transparent opacity-75 hover:opacity-100"
                     )}
                   >
-                    <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`View ${idx}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Content Tabs */}
-            <div className="bg-white rounded-[1px] shadow-sm border border-dark/10 overflow-hidden">
-              <div className="flex border-b border-dark/10 overflow-x-auto no-scrollbar">
-                {['Specs', 'History'].map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={cn(
-                      "px-4 sm:px-8 py-4 font-bold transition-colors whitespace-nowrap border-b-2",
-                      activeTab === tab ? "text-accent border-accent bg-accent/5" : "text-dark/70 border-transparent hover:text-dark hover:bg-white"
-                    )}
-                  >
-                    {tab}
-                  </button>
-                ))}
+            {/* Highlights Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Capacity</div>
+                  <div className="font-extrabold text-dark text-sm sm:text-base">{vehicle.seats}</div>
+                </div>
               </div>
-              
-              <div className="p-6 sm:p-8">
-                {/* 4. Full Specifications */}
-                {activeTab === 'Specs' && (
-                  <div>
-                    <h3 className="text-2xl font-bold text-dark mb-6">Technical Specifications</h3>
-                    <div className="flex gap-4 mb-6 overflow-x-auto no-scrollbar pb-2">
-                      {['Engine', 'Performance', 'Dimensions', 'Features'].map(tab => (
-                        <button
-                          key={tab}
-                          onClick={() => setActiveSpecTab(tab)}
-                          className={cn(
-                            "px-4 py-2 rounded-md text-sm font-bold transition-all whitespace-nowrap",
-                            activeSpecTab === tab ? "bg-accent text-white" : "bg-white text-dark/70 hover:bg-white"
-                          )}
-                        >
-                          {tab}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <div className="bg-white rounded-[1px] p-6">
-                      {activeSpecTab !== 'Features' ? (
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          {(VEHICLE_SPECS[activeSpecTab.toLowerCase() as keyof typeof VEHICLE_SPECS] as Array<{label: string, value: string}>).map((spec, idx) => (
-                            <div key={idx} className="flex justify-between items-center py-3 border-b border-dark/20 last:border-0">
-                              <span className="text-dark/70">{spec.label}</span>
-                              <span className="font-bold text-dark text-right">{spec.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
-                          {VEHICLE_SPECS.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-center gap-3">
-                              <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
-                              <span className="text-dark/80 font-medium">{feature}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
 
-                {/* 5. Vehicle History & Condition */}
-                {activeTab === 'History' && (
-                  <div>
-                    <h3 className="text-2xl font-bold text-dark mb-6">Vehicle History & Condition</h3>
-                    <div className="space-y-4">
-                      {VEHICLE_HISTORY.map((item, idx) => (
-                        <div key={idx} className="bg-white rounded-[1px] p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div className={cn(
-                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                              item.status === 'success' ? "bg-accent/10 text-accent" : "bg-dark/10 text-dark"
-                            )}>
-                              {item.status === 'success' ? <ShieldCheck className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
-                            </div>
-                            <span className="font-bold text-dark">{item.label}</span>
-                          </div>
-                          <span className="text-dark/70 font-medium">{item.value}</span>
-                        </div>
-                      ))}
+              <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Transmission</div>
+                  <div className="font-extrabold text-dark text-sm sm:text-base">{vehicle.transmission}</div>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Fuel className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Fuel</div>
+                  <div className="font-extrabold text-dark text-sm sm:text-base">{vehicle.fuel}</div>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Insurance</div>
+                  <div className="font-extrabold text-dark text-sm sm:text-base">Full Comprehensive</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rental Overview & Rates */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sm:p-8 space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-dark mb-3">Rental Inclusions &amp; Benefits</h3>
+                <div className="grid sm:grid-cols-2 gap-3.5">
+                  {RENTAL_SPECS_DATA.features.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-3 bg-slate-50/80 p-3 rounded-lg border border-slate-100">
+                      <CheckCircle2 className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                      <span className="text-sm font-medium text-slate-700">{item}</span>
                     </div>
-                    
-                    <div className="mt-8 bg-primary/10 rounded-[1px] p-6 border border-primary/20 flex gap-6 items-start">
-                      <div className="w-12 h-12 bg-accent text-white rounded-xl flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="w-6 h-6" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="text-lg font-bold text-dark mb-4">Rental Rate Breakdown</h4>
+                <div className="space-y-3">
+                  {RENTAL_SPECS_DATA.rates.map((rate, idx) => (
+                    <div key={idx} className="flex justify-between items-center bg-slate-50 p-3.5 rounded-lg border border-slate-200/60">
+                      <div>
+                        <div className="font-bold text-dark text-sm">{rate.period}</div>
+                        <div className="text-xs text-slate-500">{rate.note}</div>
+                      </div>
+                      <div className="font-extrabold text-accent text-base">{rate.price}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Rental FAQs */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sm:p-8">
+              <h3 className="text-xl font-bold text-dark mb-6 flex items-center gap-2">
+                <Info className="w-5 h-5 text-accent" />
+                <span>Car Rental Questions &amp; Guidelines</span>
+              </h3>
+              <div className="space-y-3">
+                {RENTAL_FAQS.map((faq, idx) => {
+                  const isOpen = openFaqIdx === idx;
+                  return (
+                    <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <button 
+                        onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
+                        className="w-full px-5 py-4 text-left flex justify-between items-center bg-white hover:bg-slate-50 transition-colors"
+                      >
+                        <span className="font-bold text-dark text-sm sm:text-base pr-4">{faq.q}</span>
+                        <ChevronDown className={cn("w-5 h-5 text-accent transition-transform shrink-0", isOpen && "rotate-180")} />
+                      </button>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="px-5 pb-5 pt-1 bg-slate-50/70 text-slate-600 text-sm leading-relaxed border-t border-gray-100">
+                              {faq.a}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right Sticky Sidebar */}
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-28 space-y-6">
+              
+              {/* Pricing Card */}
+              <div className="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-gray-200 p-6 sm:p-7 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-accent via-red-500 to-primary" />
+                
+                <div className="mb-4">
+                  <div className="flex justify-between items-start gap-3 mb-2">
+                    <h1 className="text-xl sm:text-2xl font-extrabold text-dark leading-tight">
+                      {vehicle.name}
+                    </h1>
+                    <button 
+                      onClick={() => setIsSaved(!isSaved)}
+                      className={cn(
+                        "p-2 rounded-full border transition-all duration-200 flex items-center justify-center shrink-0",
+                        isSaved ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100"
+                      )}
+                      aria-label="Save rental"
+                    >
+                      <Heart className={cn("w-4 h-4", isSaved && "fill-rose-600")} />
+                    </button>
+                  </div>
+
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Daily Rental Rate
+                  </span>
+                  <div className="text-3xl sm:text-4xl font-black text-accent mt-1 tracking-tight">
+                    {vehicle.price}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">Includes Comprehensive Insurance</div>
+                </div>
+
+                {/* Driver Option Selector */}
+                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-5">
+                  <div className="text-xs font-bold text-dark mb-2">Select Rental Preference:</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      onClick={() => setWithDriver(false)}
+                      className={cn(
+                        "py-2 px-3 text-xs font-bold rounded-lg border transition-all",
+                        !withDriver ? "bg-accent text-white border-accent shadow-sm" : "bg-white text-dark border-gray-200 hover:bg-slate-100"
+                      )}
+                    >
+                      Self-Drive
+                    </button>
+                    <button 
+                      onClick={() => setWithDriver(true)}
+                      className={cn(
+                        "py-2 px-3 text-xs font-bold rounded-lg border transition-all",
+                        withDriver ? "bg-accent text-white border-accent shadow-sm" : "bg-white text-dark border-gray-200 hover:bg-slate-100"
+                      )}
+                    >
+                      With Chauffeur
+                    </button>
+                  </div>
+                </div>
+
+                {/* Primary Action Buttons */}
+                <div className="space-y-3">
+                  <a 
+                    href="tel:0244753849" 
+                    className="w-full bg-[#DB1919] hover:bg-[#b51414] text-white font-bold py-3.5 px-4 rounded-full transition-all shadow-md flex justify-center items-center gap-2 text-sm sm:text-base"
+                  >
+                    <Phone className="w-5 h-5" />
+                    <span>Call Hotline for Booking</span>
+                  </a>
+
+                  <a 
+                    href={`https://wa.me/233244753849?text=Hello%20Santa%20Towing,%20I%20would%20like%20to%20reserve%20the%20${encodeURIComponent(vehicle.name)}%20(${withDriver ? 'With Chauffeur' : 'Self-Drive'}).`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold py-3.5 px-4 rounded-full transition-all shadow-md flex justify-center items-center gap-2 text-sm sm:text-base"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    <span>WhatsApp Instant Booking</span>
+                  </a>
+
+                  <button 
+                    onClick={() => setShowBookingModal(true)}
+                    className="w-full bg-slate-100 hover:bg-slate-200 text-dark font-bold py-3 px-4 rounded-full transition-all flex justify-center items-center gap-2 text-sm"
+                  >
+                    <Calendar className="w-4 h-4 text-slate-600" />
+                    <span>Reserve Online</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Showroom & Pickup Location */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                <h3 className="font-bold text-dark text-base mb-3 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-accent" />
+                  <span>Fleet Station &amp; Pickup</span>
+                </h3>
+                <p className="text-xs text-slate-600 mb-3">
+                  Airport pickup / drop-off available at Kotoka International Airport (ACC) on request.
+                </p>
+                <div className="text-xs text-slate-500 font-medium">
+                  Main Depot: Spintex Road, Accra • 24/7 Dispatch
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Booking Modal */}
+      <AnimatePresence>
+        {showBookingModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark/70 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative"
+            >
+              <button 
+                onClick={() => { setShowBookingModal(false); setBookingSubmitted(false); }}
+                className="absolute top-5 right-5 text-slate-400 hover:text-dark p-1 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {!bookingSubmitted ? (
+                <>
+                  <div className="mb-5">
+                    <div className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Rental Reservation</div>
+                    <h3 className="text-xl font-bold text-dark">{vehicle.name}</h3>
+                  </div>
+
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setBookingSubmitted(true);
+                    }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-xs font-bold text-dark mb-1">Full Name</label>
+                      <input required type="text" placeholder="Your name" className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-accent" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-dark mb-1">Phone / WhatsApp</label>
+                      <input required type="tel" placeholder="e.g. 0244 000 000" className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-accent" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-dark mb-1">Start Date</label>
+                        <input required type="date" className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-xs sm:text-sm focus:outline-none focus:border-accent" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-dark text-lg mb-2">Santa Towing Certified Pre-Owned</h4>
-                        <p className="text-dark/70">This vehicle has passed our comprehensive 150-point inspection and comes with a 3-month limited warranty. Reconditioned to the highest standards.</p>
+                        <label className="block text-xs font-bold text-dark mb-1">Rental Duration</label>
+                        <select className="w-full px-3 py-2.5 rounded-lg border border-gray-300 text-xs sm:text-sm focus:outline-none focus:border-accent bg-white">
+                          <option>1 Day</option>
+                          <option>2 - 3 Days</option>
+                          <option>1 Week</option>
+                          <option>1 Month+</option>
+                        </select>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                
-              </div>
-            </div>
-
-            {/* 10. FAQs */}
-            <div className="bg-white rounded-[1px] shadow-sm border border-dark/10 p-6 sm:p-8">
-              <h3 className="text-2xl font-bold text-dark mb-6">Frequently Asked Questions</h3>
-              <div className="space-y-4">
-                {VEHICLE_FAQS.map((faq, idx) => (
-                  <div key={idx} className="border border-dark/20 rounded-[1px] overflow-hidden">
-                    <button 
-                      onClick={() => setOpenFaqIdx(openFaqIdx === idx ? null : idx)}
-                      className="w-full px-6 py-5 text-left flex justify-between items-center bg-white hover:bg-dark/5 transition-colors rounded-full"
-                    >
-                      <span className="font-bold text-dark pr-4">{faq.q}</span>
-                      <ChevronDown className={cn("w-5 h-5 text-primary transition-transform shrink-0", openFaqIdx === idx && "rotate-180")} />
+                    <button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-3 px-6 rounded-full shadow-md text-sm mt-2">
+                      Submit Reservation Request
                     </button>
-                    <AnimatePresence>
-                      {openFaqIdx === idx && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-6 py-5 bg-white text-dark/70">
-                            {faq.a}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                  </form>
+                </>
+              ) : (
+                <div className="text-center py-6 space-y-4">
+                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-8 h-8" />
                   </div>
-                ))}
-              </div>
-            </div>
-            
+                  <h3 className="text-2xl font-bold text-dark">Reservation Request Sent!</h3>
+                  <p className="text-sm text-slate-600">
+                    Our rental reservations desk will contact you via phone/WhatsApp immediately to confirm vehicle availability.
+                  </p>
+                  <button 
+                    onClick={() => { setShowBookingModal(false); setBookingSubmitted(false); }}
+                    className="bg-primary text-white font-bold px-6 py-2.5 rounded-full text-sm hover:bg-primary/90"
+                  >
+                    Done
+                  </button>
+                </div>
+              )}
+            </motion.div>
           </div>
-
-
-            {/* Previous / Next Vehicle Navigation */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 mt-12 border-t border-dark/10">
-              {(() => {
-                const currentId = Number(id) || 1;
-                const prevId = currentId > 1 ? currentId - 1 : null;
-                const nextId = currentId < 8 ? currentId + 1 : null; // Assuming 8 vehicles based on mock data length
-                
-                return (
-                  <>
-                    <div className="w-full sm:w-1/2 flex justify-start">
-                      {prevId && (
-                        <Link to={`/rental/${prevId}`} className="group flex items-center gap-3 hover:bg-slate-50 p-3 rounded-[1px] transition-colors max-w-full">
-                          <div className="w-10 h-10 shrink-0 bg-slate-100 flex items-center justify-center rounded-full group-hover:bg-accent group-hover:text-white transition-colors">
-                            <ChevronRight className="w-5 h-5 rotate-180" />
-                          </div>
-                          <div className="overflow-hidden">
-                            <div className="text-xs text-dark/50 font-bold uppercase tracking-wider mb-0.5">Previous Vehicle</div>
-                            <div className="text-sm font-bold text-dark group-hover:text-accent truncate">View Listing #{prevId}</div>
-                          </div>
-                        </Link>
-                      )}
-                    </div>
-                    <div className="w-full sm:w-1/2 flex justify-end">
-                      {nextId && (
-                        <Link to={`/rental/${nextId}`} className="group flex items-center gap-3 hover:bg-slate-50 p-3 rounded-[1px] transition-colors max-w-full text-right">
-                          <div className="overflow-hidden">
-                            <div className="text-xs text-dark/50 font-bold uppercase tracking-wider mb-0.5">Next Vehicle</div>
-                            <div className="text-sm font-bold text-dark group-hover:text-accent truncate">View Listing #{nextId}</div>
-                          </div>
-                          <div className="w-10 h-10 shrink-0 bg-slate-100 flex items-center justify-center rounded-full group-hover:bg-accent group-hover:text-white transition-colors">
-                            <ChevronRight className="w-5 h-5" />
-                          </div>
-                        </Link>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-
-          {/* 3. Vehicle Summary Panel (Sticky Sidebar) */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-[120px] space-y-6">
-              
-              <div className="bg-white rounded-[1px] shadow-sm border border-dark/10 p-6 sm:p-8">
-                <div className="flex justify-between items-start mb-2">
-                  <h1 className="text-2xl md:text-3xl font-bold text-dark leading-tight">2024 Mercedes-Benz E-Class</h1>
-                  <div className="flex gap-2">
-                    <button className="p-2 text-dark/70 hover:text-accent hover:bg-accent/10 rounded-xl transition-colors rounded-full" aria-label="Save">
-                      <Heart className="w-5 h-5" />
-                    </button>
-                    <button className="p-2 text-dark/70 hover:text-accent hover:bg-accent/10 rounded-xl transition-colors rounded-full" aria-label="Share">
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-                
-                <p className="text-dark/70 mb-6">Premium Luxury Sedan</p>
-                <div className="text-3xl md:text-4xl font-bold text-accent mb-8">GH₵ 980,000</div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4 mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0">
-                      <Calendar className="w-5 h-5 text-dark" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-dark/70">Year</div>
-                      <div className="font-bold text-dark text-sm">2024</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#192C2C] rounded-xl flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                      <MapPin className="w-5 h-5 text-white group-hover:text-[#192C2C]" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-dark/70">Mileage</div>
-                      <div className="font-bold text-dark text-sm">0 km</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0">
-                      <Fuel className="w-5 h-5 text-dark" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-dark/70">Fuel</div>
-                      <div className="font-bold text-dark text-sm">Hybrid</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0">
-                      <Settings className="w-5 h-5 text-dark" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-dark/70">Trans</div>
-                      <div className="font-bold text-dark text-sm">Automatic</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <a href="tel:0244753849" className="w-full bg-accent hover:bg-accent/90 text-white font-bold py-4 transition-all shadow-md flex justify-center items-center gap-2 rounded-full"><Phone className="w-5 h-5"/> Call Now</a>
-                  <a href="https://wa.me/233244753849" target="_blank" rel="noopener noreferrer" className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold py-4 transition-all shadow-md flex justify-center items-center gap-2 rounded-full"><MessageCircle className="w-5 h-5"/> WhatsApp Us</a>
-                </div>
-              </div>
-
-              {/* 8. Dealer/Contact Info */}
-              <div className="bg-white rounded-[1px] shadow-sm border border-dark/10 p-6 sm:p-8">
-                <h3 className="font-bold text-dark text-lg mb-6">Contact Sales Team</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-[#192C2C] rounded-xl flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                      <MapPin className="w-5 h-5 text-white group-hover:text-[#192C2C]" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-dark">Location</div>
-                      <p className="text-sm text-dark/70">123 Spintex Road, Accra</p>
-                    </div>
-                  </div>
-                  <a href="tel:0244753849" className="flex items-start gap-4 hover:opacity-80 transition-opacity">
-                    <div className="w-10 h-10 bg-[#192C2C] rounded-xl flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                      <Phone className="w-5 h-5 text-white group-hover:text-[#192C2C]" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-dark">Call Us</div>
-                      <p className="text-sm text-dark/70">0244753849</p>
-                    </div>
-                  </a>
-                  <a href="https://wa.me/233244753849" target="_blank" rel="noopener noreferrer" className="flex items-start gap-4 hover:opacity-80 transition-opacity">
-                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
-                      <MessageCircle className="w-5 h-5 text-accent" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-dark">WhatsApp</div>
-                      <p className="text-sm text-dark/70">Chat with a Specialist</p>
-                    </div>
-                  </a>
-                </div>
-                
-                <div className="mt-6 aspect-[2/1] rounded-[1px] overflow-hidden bg-white relative">
-                   <div className="absolute inset-0 bg-[url('https://i.ibb.co/vC6nfrK8/Image-7-Pickup-Toyota-Hilux-2023.jpg')] bg-cover bg-center grayscale opacity-80" />
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-8 h-8 bg-accent text-white rounded-xl flex items-center justify-center shadow-lg animate-bounce">
-                        <MapPin className="w-4 h-4" />
-                      </div></div></div>
-      {/* 7. Similar Vehicles */}
-      <section className="py-12 md:py-20 bg-white border-t border-dark/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-dark">Similar Vehicles</h2>
-            <Link to="/rental" className="text-accent font-bold hover:underline flex items-center gap-1">
-              View All <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-             {[
-               { id: 2, type: 'New', name: '2024 Range Rover Sport', price: 'GH₵ 1,450,000', image: 'https://i.ibb.co/0RDWpXBh/Image-8-Heavy-Duty-Recovery-Vehicle-or-Car.jpg' },
-               { id: 7, type: 'New', name: '2024 Toyota Hilux', price: 'GH₵ 850,000', image: 'https://i.ibb.co/vC6nfrK8/Image-7-Pickup-Toyota-Hilux-2023.jpg' },
-               { id: 8, type: 'Foreign Used', name: '2021 Lexus RX 350', price: 'GH₵ 680,000', image: 'https://i.ibb.co/j9GzSqt8/Image-9-Car-Battery-Maintenance.jpg' }
-             ].map((vehicle, idx) => (
-                <div key={idx} className="bg-white rounded-[1px] overflow-hidden border border-dark/10 shadow-sm hover:shadow-lg transition-all group flex flex-col">
-                  <div className="aspect-[4/3] relative overflow-hidden bg-white">
-                    <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    <div className="absolute top-4 left-4 bg-accent text-white px-3 py-1 rounded-[1px] text-xs font-bold shadow-sm">{vehicle.type}</div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-bold mb-2 text-dark line-clamp-1 group-hover:text-accent transition-colors">{vehicle.name}</h3>
-                    <div className="font-bold text-accent mb-4">{vehicle.price}</div>
-                    <Link to={`/rental/${vehicle.id}`} className="block w-full text-center bg-white border border-dark/20 hover:bg-white text-dark py-3 font-bold transition-colors text-sm rounded-full">
-                      View Details
-                    </Link>
-                  </div>
-                </div>
-             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 11. Call-to-Action Banner */}
-      <section className="py-16 md:py-24 bg-primary text-white text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://i.ibb.co/1YFx5jQV/Image-10-Engine-Oil-and-Fluids-Maintenance.jpg')] bg-cover bg-center opacity-10 mix-blend-overlay" />
-        <div className="relative z-10 max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Interested in This Vehicle?</h2>
-          <p className="text-lg md:text-xl mb-10 text-white/70">
-            Contact us today to schedule a viewing or secure this vehicle before it's gone.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <a href="tel:0244753849" className="bg-accent hover:bg-accent/90 text-white px-4 sm:px-8 py-4 font-bold transition-all shadow-xl rounded-full flex items-center gap-2"><Phone className="w-5 h-5"/> Call Now</a>
-            <a href="https://wa.me/233244753849" target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#1EBE5D] text-white px-4 sm:px-8 py-4 font-bold transition-all shadow-xl rounded-full flex items-center gap-2"><MessageCircle className="w-5 h-5"/> WhatsApp Us</a>
-          </div>
-        </div>
-      </section>
-</div></div></div></div></div>
-</main>
+        )}
+      </AnimatePresence>
+    </main>
   );
 }
