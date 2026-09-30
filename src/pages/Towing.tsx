@@ -258,22 +258,10 @@ Sent via Santa Towing Online Dispatch Form.`;
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-lg md:text-xl text-white/70 mb-10 max-w-lg"
+                className="text-lg md:text-xl text-white/70 max-w-lg"
               >
                 Fast dispatch, GPS-tracked recovery vehicles, and professional operators ready around the clock.
               </motion.p>
-              
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex flex-col sm:flex-row gap-4"
-              >
-                <a href="tel:0244753849" className="bg-accent hover:bg-accent/90 text-white px-4 sm:px-8 py-4 font-bold transition-all shadow-lg shadow-accent/30 flex items-center justify-center gap-3 text-lg rounded-full">
-                  <Phone className="w-6 h-6" />
-                  0244753849
-                </a>
-              </motion.div>
             </div>
 
             <motion.div 
@@ -282,7 +270,6 @@ Sent via Santa Towing Online Dispatch Form.`;
               transition={{ delay: 0.3 }}
               className="bg-white rounded-[1px] p-6 sm:p-8 shadow-2xl relative"
             >
-              <div className="absolute top-0 left-0 w-full h-2 bg-primary rounded-t-[1px]" />
               <h3 className="text-2xl font-bold text-dark mb-2">Request a Tow Now</h3>
               
               {formState === 'success' ? (

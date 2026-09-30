@@ -317,13 +317,9 @@ Please provide a haulage rate estimate.`;
             className="mb-6"
           />
 
-          <div className="grid lg:grid-cols-12 gap-8 md:gap-12 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-accent/20 text-accent font-bold text-xs sm:text-sm uppercase tracking-wider mb-5 border border-accent/30 rounded-full">
-                <Truck className="w-4 h-4" /> Nationwide Heavy Haulage & Logistics
-              </div>
-              
+          <div className="max-w-4xl">
+            {/* Main Content */}
+            <div>
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -342,22 +338,6 @@ Please provide a haulage rate estimate.`;
                 Santa Towing provides professional, secure, and prompt haulage services for vehicles, heavy construction machinery, industrial generators, shipping containers, and oversized freight throughout Ghana. From Tema Harbour to inland project sites, we get your valuable cargo moved safely.
               </motion.p>
 
-              {/* Quick highlights */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8 text-xs sm:text-sm font-semibold">
-                <div className="flex items-center gap-2 bg-white/10 px-3 py-2.5 rounded-[1px] backdrop-blur-sm border border-white/10">
-                  <CheckCircle className="w-4 h-4 text-accent shrink-0" />
-                  <span>Lowbeds &amp; Flatbeds</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/10 px-3 py-2.5 rounded-[1px] backdrop-blur-sm border border-white/10">
-                  <CheckCircle className="w-4 h-4 text-accent shrink-0" />
-                  <span>Tema Port Clearance</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/10 px-3 py-2.5 rounded-[1px] backdrop-blur-sm border border-white/10 col-span-2 sm:col-span-1">
-                  <CheckCircle className="w-4 h-4 text-accent shrink-0" />
-                  <span>Goods-In-Transit Insured</span>
-                </div>
-              </div>
-
               {/* Action Buttons */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
@@ -365,70 +345,23 @@ Please provide a haulage rate estimate.`;
                 transition={{ delay: 0.2 }}
                 className="flex flex-wrap items-center gap-4"
               >
-                <button 
-                  onClick={scrollToQuote}
-                  className="bg-accent hover:bg-accent/90 text-white px-7 py-4 font-bold transition-all shadow-lg shadow-accent/30 hover:-translate-y-0.5 flex items-center gap-2 text-base rounded-full"
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>Request a Haulage Quote</span>
-                </button>
                 <a 
                   href="tel:0244753849" 
-                  className="bg-white/15 hover:bg-white/25 text-white px-7 py-4 font-bold transition-all border border-white/20 flex items-center gap-2 text-base rounded-full"
+                  className="bg-accent hover:bg-accent/90 text-white px-7 py-4 font-bold transition-all shadow-lg shadow-accent/30 hover:-translate-y-0.5 flex items-center gap-2 text-base rounded-full"
                 >
-                  <Phone className="w-5 h-5 text-accent" />
-                  <span>0244753849</span>
+                  <Phone className="w-5 h-5" />
+                  <span>Call 0244753849</span>
                 </a>
-              </motion.div>
-            </div>
-
-            {/* Right Card / Visual Showcase */}
-            <div className="lg:col-span-5">
-              <div className="bg-white text-dark p-6 sm:p-8 rounded-[1px] shadow-2xl border border-white/20 relative">
-                <div className="flex items-center justify-between pb-4 mb-5 border-b border-gray-100">
-                  <div>
-                    <h2 className="font-extrabold text-xl text-dark">Express Haulage Dispatch</h2>
-                    <p className="text-xs text-slate-500">24/7 Heavy Equipment &amp; Cargo Moving</p>
-                  </div>
-                  <div className="w-12 h-12 bg-[#192C2C] text-white rounded-xl flex items-center justify-center font-bold">
-                    <Truck className="w-6 h-6" />
-                  </div>
-                </div>
-
-                <div className="space-y-3.5 mb-6 text-sm">
-                  <div className="flex items-start gap-3 p-3 rounded-[1px] bg-slate-50 border border-gray-100">
-                    <Anchor className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-dark block">Tema Harbour Fast-Track</span>
-                      <span className="text-xs text-slate-600">Container, plant & vehicle dockside pickup</span>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 rounded-[1px] bg-slate-50 border border-gray-100">
-                    <Weight className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-dark block">Heavy Plant Machinery</span>
-                      <span className="text-xs text-slate-600">Excavators, bulldozers & cranes up to 60+ tons</span>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 rounded-[1px] bg-slate-50 border border-gray-100">
-                    <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold text-dark block">All 16 Regions of Ghana</span>
-                      <span className="text-xs text-slate-600">Accra, Tema, Kumasi, Takoradi, Tamale & mining belts</span>
-                    </div>
-                  </div>
-                </div>
-
                 <a 
-                  href="https://wa.me/233244753849?text=Hello%20Santa%20Towing%20team,%20I%20need%20a%20haulage%20quote%20for%20cargo%20transportation." 
+                  href="https://wa.me/233244753849?text=Hello%20Santa%20Towing%2C%20I%20need%20a%20haulage%20quote%20for%20cargo%20transportation." 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-full bg-[#25D366] hover:bg-[#1EBE5D] text-white py-3.5 font-bold transition-all shadow-md flex items-center justify-center gap-2 text-sm rounded-full"
+                  className="bg-[#25D366] hover:bg-[#20ba59] text-white px-7 py-4 font-bold transition-all shadow-lg shadow-[#25D366]/30 hover:-translate-y-0.5 flex items-center gap-2 text-base rounded-full"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Instant WhatsApp Contact</span>
+                  <MessageCircle className="w-5 h-5 text-white" />
+                  <span>WhatsApp Us</span>
                 </a>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -437,20 +370,16 @@ Please provide a haulage rate estimate.`;
       {/* 2. STATS & CAPABILITIES BAR */}
       <section className="bg-white border-b border-gray-200 py-6 sm:py-8 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-gray-100">
-            <div className="pt-2 md:pt-0">
-              <div className="text-2xl sm:text-3xl font-extrabold text-primary mb-1">100%</div>
-              <div className="text-xs sm:text-sm text-slate-600 font-medium">Insured Transit Coverage</div>
-            </div>
-            <div className="pt-2 md:pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+            <div className="pt-2 sm:pt-0">
               <div className="text-2xl sm:text-3xl font-extrabold text-accent mb-1">16 Regions</div>
               <div className="text-xs sm:text-sm text-slate-600 font-medium">Nationwide Route Network</div>
             </div>
-            <div className="pt-2 md:pt-0">
+            <div className="pt-2 sm:pt-0">
               <div className="text-2xl sm:text-3xl font-extrabold text-primary mb-1">60+ Tons</div>
               <div className="text-xs sm:text-sm text-slate-600 font-medium">Heavy Lowbed Capacity</div>
             </div>
-            <div className="pt-2 md:pt-0">
+            <div className="pt-2 sm:pt-0">
               <div className="text-2xl sm:text-3xl font-extrabold text-accent mb-1">24/7</div>
               <div className="text-xs sm:text-sm text-slate-600 font-medium">Active Dispatch &amp; Support</div>
             </div>
@@ -463,9 +392,6 @@ Please provide a haulage rate estimate.`;
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16">
-            <div className="inline-block px-3.5 py-1.5 bg-primary/10 text-primary font-bold text-xs uppercase tracking-wider mb-3 border border-primary/20 rounded-full">
-              Specialized Transport Solutions
-            </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-dark tracking-tight mb-4">
               Comprehensive Haulage Services
             </h2>
@@ -476,7 +402,6 @@ Please provide a haulage rate estimate.`;
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {HAULAGE_SERVICES.map((service, idx) => {
-              const IconComponent = service.icon;
               return (
                 <motion.div
                   key={service.id}
@@ -505,10 +430,7 @@ Please provide a haulage rate estimate.`;
 
                   {/* Body */}
                   <div className="p-6 sm:p-7 flex-1 flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#192C2C] text-white flex items-center justify-center group-hover:bg-white group-hover:text-[#192C2C] transition-colors shrink-0">
-                        <IconComponent className="w-5 h-5" />
-                      </div>
+                    <div className="mb-3">
                       <h3 className="text-xl font-bold text-dark group-hover:text-primary transition-colors">
                         {service.title}
                       </h3>
